@@ -36,43 +36,14 @@ class ApiController extends AbstractController
 //        ];
         for ($i = 0; $i<count($array); $i++){
             for($j = 0; $j<count($array); $j++){
-                if($array[$i]['Team'] === $array[$j]['parent_team']){
+                if(ucwords($array[$i]['Team']) === ucwords($array[$j]['parent_team'])){
                     $response[$array[$i]['Team']][] = $array[$j];
 //                    dump($array);
                 }
             }
         }
-        dump($response);
-        die;
-        foreach ($array as $arr){
-//            dump($arr);
-            $team = $arr['Team'];
-//            dump($team);
-//            if($arr['parent_team'] === $newHeader['Team'])
-//                $response[$newHeader['Team']]['teams'][] = $arr;
-            foreach ($arr as $a){
-                if($a === $team){
-                    dump($a);
-                }
-            }
-            die;
-//            dump($response);
 
-//            $key = array_search('C Suit', $arr);
-//            if($key){
-//                $response['C Suit'] = array(
-//                    'teamName' =>
-//                    $arr);
-//                dump($key);
-//            }
-//            dump($key);
-
-//            foreach ($arr as $a){
-//                dump($arr);
-
-//            }
-        }
-        die;
+//        die;
         dd($response);
     }
 }
