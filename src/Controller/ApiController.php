@@ -3,47 +3,61 @@
 namespace App\Controller;
 
 
+use App\Helper\ApiHelper;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\UserNotFoundException;
 
 class ApiController extends AbstractController
 {
-    public function read(Request $request)
+    /**
+     * @var ApiHelper $apiHelper
+     * @required
+     */
+    public ApiHelper $apiHelper;
+
+    public function read(Request $request): JsonResponse
     {
+        //check if auth token exists in headers
         $apiToken = $request->headers->get('X-AUTH-TOKEN');
 
+        //check if api token is the same as the one in the ENV
+        //symfony would not allow me to create a custom auth without creating a UserProvider
+        //so I found this solution
         if ($apiToken !== $_ENV['API_TOKEN'])
         {
             throw new UserNotFoundException('API Key is not correct');
         }
 
-        $response = [];
-
+        //get the content of the file
         $lines = array_filter(preg_split('/\n|\r\n?/', $request->getContent()));
+        //get only the head of the csv
         $headers = array_shift($lines);
 
+        //get the parameter to filter data
+        $parameter = $request->query->get('_q');
+
         $array = [];
+        //combine headers with content
         foreach ($lines as $line) {
             $array[] = array_combine(explode(',', $headers), explode(',', $line));
         }
-//        $newHeader = array_shift($array);
-//        $response[$newHeader['Team']][] = [
-//            'team' => $newHeader['Team'],
-//            'parentTeam' => $newHeader['parent_team'],
-//            'managerName' => $newHeader['manager_name'],
-//            'businessUnit' => $newHeader['business_unit'],
-//        ];
-        for ($i = 0; $i<count($array); $i++){
-            for($j = 0; $j<count($array); $j++){
-                if(ucwords($array[$i]['Team']) === ucwords($array[$j]['parent_team'])){
-                    $response[$array[$i]['Team']][] = $array[$j];
-//                    dump($array);
-                }
-            }
-        }
+        $newHeader = array_shift($array);
+        //build response for root Team
+        $response[$newHeader['Team']][] = [
+            'team' => $newHeader['Team'],
+            'parentTeam' => $newHeader['parent_team'],
+            'managerName' => $newHeader['manager_name'],
+            'businessUnit' => $newHeader['business_unit'],
+            'teams' => []
+        ];
 
-//        die;
-        dd($response);
+        $newResponse = $this->apiHelper->getTeams($parameter, $array);
+
+        //add child teams to root team
+        $response[$newHeader['Team']][0]['teams'] = array($newResponse);
+        //return structured JSON response
+        return new JsonResponse($response);
     }
 }
