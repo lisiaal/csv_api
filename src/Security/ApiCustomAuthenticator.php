@@ -36,9 +36,7 @@ class ApiCustomAuthenticator extends AbstractAuthenticator
         return new SelfValidatingPassport(new UserBadge($apiToken, function() use ($apiToken) {
             if ($apiToken !== $_ENV['API_TOKEN']){
                 throw new UserNotFoundException('API Key is not correct');
-                dd($apiToken === $_ENV['API_TOKEN']);
             }
-
         }
         ));
     }
@@ -54,15 +52,4 @@ class ApiCustomAuthenticator extends AbstractAuthenticator
             'message' => $exception->getMessageKey()
         ], 401);
     }
-
-//    public function start(Request $request, AuthenticationException $authException = null): Response
-//    {
-//        /*
-//         * If you would like this class to control what happens when an anonymous user accesses a
-//         * protected page (e.g. redirect to /login), uncomment this method and make this class
-//         * implement Symfony\Component\Security\Http\EntryPoint\AuthenticationEntryPointInterface.
-//         *
-//         * For more details, see https://symfony.com/doc/current/security/experimental_authenticators.html#configuring-the-authentication-entry-point
-//         */
-//    }
 }
